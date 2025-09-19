@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secure Demo — Sign In</title>
+  <meta name="description" content="Professional sign-in form demo with validation and password-strength meter (client-side demo)." />
+
+  <!-- Inline CSS: modern, minimal, professional -->
+  <style>
+    :root{
+      --bg:#0f1724; /* deep navy */
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#7c3aed; /* violet */
+      --success:#16a34a;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.03);
+      --radius:14px;
+      --shadow: 0 6px 20px rgba(2,6,23,0.6);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(800px 400px at 10% 20%, rgba(124,58,237,0.12), transparent 6%),
+        radial-gradient(600px 300px at 90% 80%, rgba(2,132,199,0.06), transparent 6%),
+        linear-gradient(180deg, var(--bg), #071026 80%);
+      color:#e6eef8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:32px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .container{
+      width:100%;
+      max-width:960px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:28px;
+      align-items:center;
+    }
+
+    /* Left: marketing panel */
+    .panel{
+      padding:36px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .brand{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      margin-bottom:16px;
+    }
+    .logo{
+      width:52px;height:52px;border-radius:12px;
+      display:grid;place-items:center;font-weight:700;
+      background:linear-gradient(135deg,var(--accent),#22c1c3);
+      color:white;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.18);
+    }
+    h1{margin:0;font-size:22px}
+    p.lead{color:var(--muted); margin-top:12px; line-height:1.5}
+
+    /* Right: form card */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:28px;
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      border:1px solid rgba(255,255,255,0.04);
+    }
+
+    form{display:flex;flex-direction:column;gap:14px}
+    label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px}
+    .field{
+      display:flex;flex-direction:column;gap:6px;
+    }
+    input[type="text"], input[type="email"], input[type="password"]{
+      background:var(--glass);
+      border:1px solid rgba(255,255,255,0.04);
+      padding:12px 14px;
+      border-radius:10px;
+      color:inherit;
+      outline:none;
+      font-size:15px;
+      transition:box-shadow .15s, border-color .15s, transform .06s;
+    }
+    input:focus{
+      border-color: rgba(124,58,237,0.8);
+      box-shadow: 0 6px 20px rgba(124,58,237,0.06);
+    }
+
+    .row{display:flex;gap:12px}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:12px 14px;border-radius:10px;border:0;cursor:pointer;
+      background:linear-gradient(90deg,var(--accent),#22c1c3);
+      color:white;font-weight:600;font-size:15px;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.2);
+    }
+    .btn[disabled]{opacity:0.55; cursor:not-allowed}
+
+    .muted{color:var(--muted);font-size:13px}
+    .helper{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .link-like{color:var(--accent); text-decoration:none; font-weight:600; cursor:pointer; border-bottom:1px dashed rgba(124,58,237,0.18)}
+
+    /* password strength */
+    .strength{
+      height:8px;border-radius:8px; background:rgba(255,255,255,0.04); overflow:hidden;
+    }
+    .strength > i{
+      display:block;height:100%; width:0%;
+      background:linear-gradient(90deg,#ef4444,#f59e0b,#16a34a);
+      transition:width .35s ease;
+    }
+
+    .note{font-size:13px;color:var(--muted)}
+
+    /* small components */
+    .inline{display:flex;gap:8px;align-items:center}
+    .toggle{
+      background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px;border-radius:8px;cursor:pointer;font-weight:600;
+    }
+
+    .message{padding:10px;border-radius:10px;font-size:14px}
+    .message.success{background:rgba(16,185,129,0.08); color:var(--success); border:1px solid rgba(16,185,129,0.08)}
+    .message.error{background:rgba(239,68,68,0.06); color:var(--danger); border:1px solid rgba(239,68,68,0.06)}
+
+    /* responsive */
+    @media (max-width:880px){
+      .container{grid-template-columns: 1fr; padding:8px}
+      .panel{order:2}
+      .card{order:1}
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <!-- Left: marketing / information -->
+    <div class="panel" aria-hidden="false">
+      <div class="brand" aria-hidden="true">
+        <div class="logo">DK</div>
+        <div>
+          <div style="font-weight:700;color:white">DemoKit</div>
+          <div class="muted" style="margin-top:4px">Design • Auth • Frontend</div>
+        </div>
+      </div>
+
+      <h1>Sign in securely — demo flow</h1>
+      <p class="lead">This form demonstrates a clean sign-in UI with client-side validation and password strength UI. For production, perform authentication on the server over HTTPS.</p>
+
+      <ul style="margin-top:16px;color:var(--muted);line-height:1.8">
+        <li>Accessible labels & keyboard-friendly</li>
+        <li>Shows password strength & toggle</li>
+        <li>Shows how to call server via <code>fetch()</code> (commented)</li>
+      </ul>
+
+      <p style="margin-top:18px" class="note">Demo credentials for quick testing: <strong>user@example.com</strong> / <strong>DemoPass123!</strong></p>
+    </div>
+
+    <!-- Right: form card -->
+    <div class="card" aria-labelledby="signinHeading">
+      <h2 id="signinHeading" style="margin:0 0 6px 0">Welcome back</h2>
+      <p class="muted" style="margin:0 0 12px 0">Sign in to access your dashboard</p>
+
+      <form id="authForm" novalidate>
+        <!-- username / email -->
+        <div class="field">
+          <label for="identity">Email or username</label>
+          <input id="identity" name="identity" type="text" autocomplete="username" inputmode="email" placeholder="you@domain.com or username" required />
+          <div id="identityError" class="note" style="display:none;color:var(--danger)"></div>
+        </div>
+
+        <!-- password -->
+        <div class="field">
+          <label for="password">Password</label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required aria-describedby="passwordHelp" style="flex:1" />
+            <button type="button" id="togglePwd" class="toggle" aria-pressed="false" title="Show password">Show</button>
+          </div>
+          <div id="passwordHelp" class="helper" style="margin-top:8px">
+            <span class="note">Minimum 8 characters, mix of letters & numbers</span>
+            <a class="link-like" id="forgotLink" href="#" onclick="event.preventDefault()">Forgot?</a>
+          </div>
+
+          <!-- strength -->
+          <div style="margin-top:8px">
+            <div class="strength" aria-hidden="true"><i id="strengthBar"></i></div>
+            <div id="strengthText" class="note" style="margin-top:6px">Strength: <strong>—</strong></div>
+          </div>
+        </div>
+
+        <!-- feedback -->
+        <div id="feedback" style="display:none" role="status" aria-live="polite"></div>
+
+        <!-- actions -->
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="submitBtn" type="submit">Sign in</button>
+          <button type="button" id="demoFill" class="toggle" title="Fill demo credentials">Use demo</button>
+        </div>
+
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+          <div class="muted">Need an account? <a class="link-like" href="#" onclick="event.preventDefault()">Sign up</a></div>
+          <div class="muted">Version <strong style="margin-left:6px">1.0</strong></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Inline JS -->
+  <script>
+    // ---------- Demo "user database" (client-side only demo)
+    // WARNING: This is only for demo/testing. NEVER store real credentials in client code.
+    const demoUsers = [
+      { id: 'user-1', identity: 'user@example.com', password: 'DemoPass123!' }, // demo
+      { id: 'user-2', identity: 'alice', password: 'AlicePass2024' }
+    ];
+
+    // Helper: simple entropy-ish strength meter (client-side)
+    function evaluatePasswordStrength(pw) {
+      let score = 0;
+      if (!pw) return {score:0, label:'—'};
+      if (pw.length >= 8) score += 1;
+      if (pw.length >= 12) score += 1;
+      if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+      if (/\d/.test(pw)) score += 1;
+      if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+
+      // normalize 0..5 => percent
+      const percent = Math.min(100, Math.round((score/5) * 100));
+      let label = 'Very weak';
+      if (percent >= 80) label = 'Excellent';
+      else if (percent >= 60) label = 'Strong';
+      else if (percent >= 40) label = 'Fair';
+      else if (percent >= 20) label = 'Weak';
+
+      return {score:percent, label};
+    }
+
+    // UI elements
+    const identityEl = document.getElementById('identity');
+    const passwordEl = document.getElementById('password');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const toggleBtn = document.getElementById('togglePwd');
+    const feedback = document.getElementById('feedback');
+    const form = document.getElementById('authForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const demoFill = document.getElementById('demoFill');
+
+    // show/hide password
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = passwordEl.type === 'password';
+      passwordEl.type = isHidden ? 'text' : 'password';
+      toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
+      toggleBtn.setAttribute('aria-pressed', String(isHidden));
+    });
+
+    // update strength on input
+    passwordEl.addEventListener('input', () => {
+      const val = passwordEl.value;
+      const res = evaluatePasswordStrength(val);
+      strengthBar.style.width = res.score + '%';
+      strengthText.innerHTML = 'Strength: <strong>' + res.label + '</strong>';
+    });
+
+    // Demo fill
+    demoFill.addEventListener('click', () => {
+      identityEl.value = 'user@example.com';
+      passwordEl.value = 'DemoPass123!';
+      // update strength visually
+      const r = evaluatePasswordStrength(passwordEl.value);
+      strengthBar.style.width = r.score + '%';
+      strengthText.innerHTML = 'Strength: <strong>' + r.label + '</strong>';
+    });
+
+    // show feedback helper
+    function showFeedback(type, message, timeout = 5000) {
+      feedback.style.display = 'block';
+      feedback.className = 'message ' + (type === 'success' ? 'success' : 'error');
+      feedback.textContent = message;
+      if (timeout) {
+        clearTimeout(feedback._t);
+        feedback._t = setTimeout(() => {
+          feedback.style.display = 'none';
+        }, timeout);
+      }
+    }
+
+    // Validate basic inputs
+    function validateInputs(identity, password) {
+      const errors = [];
+      if (!identity || identity.trim().length < 3) errors.push('Please enter a valid email or username.');
+      if (!password || password.length < 8) errors.push('Password must be at least 8 characters.');
+      return errors;
+    }
+
+    // Simulated "server" authentication (client-only demo)
+    // Returns a Promise to mimic network latency
+    function simulateAuth(identity, password) {
+      return new Promise((resolve) => {
+        // fake latency
+        setTimeout(() => {
+          const user = demoUsers.find(u => u.identity.toLowerCase() === identity.toLowerCase());
+          if (!user) return resolve({ ok:false, code:404, message:'User not found' });
+          // in real server: compare hashed password
+          if (user.password !== password) return resolve({ ok:false, code:401, message:'Invalid credentials' });
+          return resolve({ ok:true, userId:user.id, message:'Authenticated' });
+        }, 850);
+      });
+    }
+
+    // Submit handler
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in…';
+
+      const identity = identityEl.value.trim();
+      const password = passwordEl.value;
+
+      const errors = validateInputs(identity, password);
+      if (errors.length) {
+        showFeedback('error', errors.join(' '));
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+        return;
+      }
+
+      // Demo: simulated auth
+      try {
+        const res = await simulateAuth(identity, password);
+        if (!res.ok) {
+          showFeedback('error', res.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign in';
+          return;
+        }
+
+        // Success
+        showFeedback('success', 'Signed in successfully — redirecting…', 4000);
+        submitBtn.textContent = 'Success';
+        // In a real app, you would store tokens in secure httpOnly cookies or use secure storage + redirect
+        setTimeout(() => {
+          // demo "redirect"
+          window.location.href = window.location.href + '?demo=loggedin';
+        }, 900);
+
+      } catch (err) {
+        showFeedback('error', 'Unexpected error. Try again.');
+        console.error(err);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+      }
+    });
+
+    // Optional: Example of sending credentials to a server securely (commented)
+    /*
+    // Example POST to server (replace /api/auth with your endpoint)
+    async function serverAuthenticate(identity, password) {
+      // Always use https in production
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // if server sets cookies
+        body: JSON.stringify({ identity, password })
+      });
+      // server should return e.g. { ok: true, token: '...', user: {...} }
+      return response.json();
+    }
+    */
+
+    // Accessibility nicety: focus first field on load
+    window.addEventListener('load', () => {
+      identityEl.focus();
+    });
+  </script>
+</body>
+</html>
